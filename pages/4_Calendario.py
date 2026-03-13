@@ -3,7 +3,6 @@
 
 import streamlit as st
 import calendar
-import json
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from services.auth_service import require_auth
@@ -13,7 +12,6 @@ from utils.formatters import format_currency, format_date_br
 from utils.dates import today, month_name_br
 from utils.constants import COLORS
 from components.tables import render_boletos_table
-import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Calendário — Bem Estar Financeiro", page_icon="📅", layout="wide")
 
@@ -92,22 +90,6 @@ def _show_boletos_dialog(day: int):
 cal = calendar.monthcalendar(year, month)
 weekdays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
-# Pre-calculate Styles
-day_style: dict[int, dict] = {}
-for week in cal:
-    for day in week:
-        if day == 0: continue
-        total = daily_totals.get(day, 0)
-        if total > limite:
-            bg, border, color = "#FEE2E2", COLORS["erro"], "#7F1D1D"
-        elif total > limite * 0.7:
-            bg, border, color = "#FEF3C7", COLORS["alerta"], "#78350F"
-        elif total > 0:
-            bg, border, color = "#D1FAE5", COLORS["primaria"], "#064E3B"
-        else:
-            bg, border, color = "#FFFFFF", COLORS["borda"], "#1F2937"
-        day_style[day] = {"bg": bg, "border": border, "color": color, "total": total}
-
 # Header de dias da semana
 cols_header = st.columns(7)
 for col, wd in zip(cols_header, weekdays):
@@ -121,100 +103,48 @@ for week in cal:
         if day == 0:
             col.empty()
         else:
-            info = day_style[day]
+            total = daily_totals.get(day, 0)
             is_today = (day == t.day and month == t.month and year == t.year)
             
-            # Formatar label do botão com o marcador invisível para o JS
-            amount_str = f"R$ {info['total']:,.0f}".replace(",", ".") if info['total'] > 0 else "—"
+            # Determinar classe de cor
+            if total > limite:
+                cls = "cal-btn-danger"
+            elif total > limite * 0.7:
+                cls = "cal-btn-warning"
+            elif total > 0:
+                cls = "cal-btn-ok"
+            else:
+                cls = "cal-btn-empty"
+            
+            today_cls = "cal-btn-today" if is_today else ""
+            
+            # Formatar label do botão
+            amount_str = f"R$ {total:,.0f}".replace(",", ".") if total > 0 else "—"
+            # Label com o dia GRANDE e o valor em baixo
             label = f"{day}{' ●' if is_today else ''}\n\n{amount_str}"
             
             with col:
+                st.markdown(f'<div class="cal-btn-wrapper {cls} {today_cls}">', unsafe_allow_html=True)
                 if st.button(label, key=f"cal_{year}_{month}_{day}", use_container_width=True):
                     clicked_day = day
+                st.markdown('</div>', unsafe_allow_html=True)
 
 if clicked_day:
     _show_boletos_dialog(clicked_day)
 
-# JS Auto-Painter - Resiliente e Independente de wrappers
-style_map_json = json.dumps({str(k): v for k, v in day_style.items()})
-components.html(
-    f"""<script>
-(function() {{
-  var SM = {style_map_json};
-  var PRIMARIA = '{COLORS['primaria']}';
-
-  function paint() {{
-    var buttons = window.parent.document.querySelectorAll('button[data-testid="baseButton-secondary"]');
-    buttons.forEach(function(b) {{
-        var fullTxt = (b.innerText || '').trim();
-        // Filtra partes vazias (causadas por \n\n)
-        var parts = fullTxt.split('\\n').map(s => s.trim()).filter(Boolean);
-        if (parts.length === 0) return;
-        
-        var firstPart = parts[0];
-        var dayMatch = firstPart.match(/^(\\d+)/);
-        if (!dayMatch) return;
-        
-        var dayNum = dayMatch[1];
-        var s = SM[dayNum];
-        if (!s) return;
-
-        // Estilização base
-        b.style.setProperty('background', s.bg, 'important');
-        b.style.setProperty('border', '4px solid ' + s.border, 'important');
-        b.style.setProperty('color', s.color, 'important');
-        b.style.setProperty('min-height', '150px', 'important');
-        b.style.setProperty('height', '100%', 'important');
-        b.style.setProperty('border-radius', '24px', 'important');
-        b.style.setProperty('white-space', 'pre-line', 'important');
-        b.style.setProperty('transition', 'all 0.2s ease', 'important');
-        b.style.setProperty('box-shadow', '0 6px 15px rgba(0,0,0,0.06)', 'important');
-        b.style.setProperty('display', 'flex', 'important');
-        b.style.setProperty('flex-direction', 'column', 'important');
-
-        // Formatação do conteúdo se ainda não foi feito
-        if (!b.getAttribute('data-v2-painted')) {{
-            var dayLabel = parts[0]; 
-            var valueLabel = parts.length > 1 ? parts[1] : '—';
-            
-            b.innerHTML = '<div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; width:100%; pointer-events:none;">' + 
-                          '<div style="font-size:2.2rem; font-weight:900; align-self:flex-start;">' + dayLabel + '</div>' + 
-                          '<div style="font-size:1.1rem; font-weight:900; background:rgba(255,255,255,0.45); border-radius:12px; padding:8px 0; width:100%; text-align:center;">' + valueLabel + '</div>' +
-                          '</div>';
-            b.setAttribute('data-v2-painted', 'true');
-        }}
-
-        // Destaque "Hoje"
-        if (fullTxt.includes('●')) {{
-             b.style.setProperty('box-shadow', '0 0 0 5px ' + PRIMARIA + ', 0 15px 30px rgba(46, 139, 87, 0.4)', 'important');
-        }}
-    }});
-  }}
-
-  paint();
-  setTimeout(paint, 500);
-  setTimeout(paint, 1500);
-  
-  var obs = new MutationObserver(paint);
-  obs.observe(window.parent.document.body, {{ childList: true, subtree: true }});
-}})();
-</script>""",
-    height=0,
-)
-
 # Legenda
 st.html(f"""
-<div style="display:flex; gap:1.5rem; justify-content:center; margin:2rem 0; flex-wrap:wrap;">
-    <span style="display:flex; align-items:center; gap:0.4rem; font-weight:600;">
-        <span style="width:16px; height:16px; background:#D1FAE5; border:2px solid {COLORS['primaria']}; border-radius:4px;"></span>
+<div style="display:flex; gap:1.5rem; justify-content:center; margin:2.5rem 0; flex-wrap:wrap;">
+    <span style="display:flex; align-items:center; gap:0.5rem; font-weight:700; font-size:1.1rem;">
+        <span style="width:20px; height:20px; background:#D1FAE5; border:3px solid {COLORS['primaria']}; border-radius:6px;"></span>
         Dentro do limite
     </span>
-    <span style="display:flex; align-items:center; gap:0.4rem; font-weight:600;">
-        <span style="width:16px; height:16px; background:#FEF3C7; border:2px solid {COLORS['alerta']}; border-radius:4px;"></span>
+    <span style="display:flex; align-items:center; gap:0.5rem; font-weight:700; font-size:1.1rem;">
+        <span style="width:20px; height:20px; background:#FEF3C7; border:3px solid {COLORS['alerta']}; border-radius:6px;"></span>
         Atenção (70-100%)
     </span>
-    <span style="display:flex; align-items:center; gap:0.4rem; font-weight:600;">
-        <span style="width:16px; height:16px; background:#FEE2E2; border:2px solid {COLORS['erro']}; border-radius:4px;"></span>
+    <span style="display:flex; align-items:center; gap:0.5rem; font-weight:700; font-size:1.1rem;">
+        <span style="width:20px; height:20px; background:#FEE2E2; border:3px solid {COLORS['erro']}; border-radius:6px;"></span>
         Acima do limite
     </span>
 </div>
