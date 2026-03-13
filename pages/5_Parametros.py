@@ -5,6 +5,7 @@ import streamlit as st
 import uuid
 from services.auth_service import require_auth
 from utils.formatters import format_currency, parse_currency
+from utils.constants import SHEET_FORNECEDORES, SHEET_CATEGORIAS, COLORS
 from services.google_sheets_service import (
     get_parametros, update_parametro, update_parametros_batch,
     get_fornecedores, get_categorias,
