@@ -15,4 +15,4 @@ echo "🚀 Iniciando Streamlit..."
 
 # Ativa o ambiente virtual e roda o app
 source venv/Scripts/activate
-streamlit run app.py
+streamlit run app.py --server.port 8510

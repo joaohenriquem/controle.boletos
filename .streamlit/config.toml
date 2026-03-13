@@ -1,5 +1,5 @@
 [server]
-port = 8510
+# port = 8510 (Removido para compatibilidade com Streamlit Cloud)
 headless = true
 enableCORS = false
 enableXsrfProtection = false
