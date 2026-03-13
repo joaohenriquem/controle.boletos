@@ -139,6 +139,7 @@ if is_authenticated():
         st.Page("pages/4_Calendario.py", title="Calendário", icon="📅"),
         st.Page("pages/5_Parametros.py", title="Parâmetros", icon="⚙️"),
         st.Page("pages/6_Relatorios.py", title="Relatórios", icon="📈"),
+        st.Page("pages/7_Como_Usar.py", title="Como Usar", icon="📖"),
     ]
 else:
     pages = [
