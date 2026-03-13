@@ -112,6 +112,74 @@
     animation: fadeIn 0.3s ease;
 }
 
+/* --- Mega Home Page Cards --- */
+.home-card-container {
+    padding: 1rem;
+}
+
+.home-card-container .stButton > button {
+    height: 420px !important;
+    max-width: 550px !important;
+    margin: 0 auto !important;
+    background: white !important;
+    border: 2px solid var(--cor-borda) !important;
+    border-radius: 40px !important;
+    padding: 3.5rem !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.06) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2rem !important;
+    color: var(--cor-texto) !important;
+    text-transform: none !important;
+    font-size: 2.2rem !important;
+    font-weight: 800 !important;
+    white-space: pre-line !important;
+    line-height: 1.2 !important;
+}
+
+.home-card-container .stButton > button:hover {
+    transform: translateY(-20px) !important;
+    box-shadow: 0 40px 80px rgba(46, 139, 87, 0.28) !important;
+    border-color: var(--cor-primaria) !important;
+    background: #f8fffb !important;
+}
+
+/* --- Stable Calendar CSS (No JS required) --- */
+.cal-btn-wrapper .stButton > button {
+    height: 160px !important;
+    min-height: 160px !important;
+    border-radius: 20px !important;
+    border: 3px solid var(--cor-borda) !important;
+    padding: 1rem !important;
+    transition: all 0.25s ease !important;
+    width: 100% !important;
+    white-space: pre-line !important;
+    font-weight: 800 !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.04) !important;
+}
+
+.cal-btn-wrapper .stButton > button:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+}
+
+.cal-btn-ok .stButton > button { background: #D1FAE5 !important; border-color: var(--cor-primaria) !important; color: #064E3B !important; }
+.cal-btn-warning .stButton > button { background: #FEF3C7 !important; border-color: var(--cor-alerta) !important; color: #78350F !important; }
+.cal-btn-danger .stButton > button { background: #FEE2E2 !important; border-color: var(--cor-erro) !important; color: #7F1D1D !important; }
+.cal-btn-empty .stButton > button { background: white !important; border-color: var(--cor-borda) !important; color: var(--cor-texto) !important; }
+
+.cal-btn-today .stButton > button {
+    box-shadow: 0 0 0 4px var(--cor-primaria), 0 10px 25px rgba(46, 139, 87, 0.3) !important;
+}
+
+.home-card-container .stButton > button div[data-testid="stMarkdownContainer"] p {
+    margin: 0 !important;
+    line-height: 1.4 !important;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
@@ -208,7 +276,8 @@
 }
 
 .calendar-cell:hover:not(.empty) {
-    transform: scale(1.03);
+    transform: translateY(-2px);
+    background: rgba(46, 139, 87, 0.05);
 }
 
 .calendar-cell.empty {
@@ -217,20 +286,21 @@
 }
 
 .calendar-cell.today {
-    box-shadow: 0 0 0 3px var(--cor-primaria), 0 2px 8px rgba(46, 139, 87, 0.2);
+    box-shadow: 0 0 0 3px var(--cor-primaria), 0 4px 12px rgba(46, 139, 87, 0.25);
+    z-index: 2;
 }
 
 .calendar-day {
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 800;
     color: var(--cor-texto);
 }
 
 .calendar-value {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 700;
     color: var(--cor-texto-sec);
-    margin-top: 2px;
+    margin-top: 4px;
 }
 
 /* --- Métricas --- */

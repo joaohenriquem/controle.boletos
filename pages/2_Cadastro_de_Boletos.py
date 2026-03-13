@@ -132,7 +132,7 @@ with tab_novo:
                 "numero_documento": numero_doc,
                 "data_emissao": str(data_emissao),
                 "data_vencimento": str(data_vencimento),
-                "valor": str(parse_currency(valor)),
+                "valor": valor,
                 "status": "pendente",
                 "recorrente": "TRUE" if recorrente else "FALSE",
                 "observacoes": observacoes,

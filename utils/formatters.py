@@ -43,13 +43,20 @@ def parse_date(date_str: str) -> date:
     raise ValueError(f"Formato de data não reconhecido: {date_str}")
 
 
-def parse_currency(value_str: str) -> float:
+def parse_currency(value_str) -> float:
     """Converte string monetária brasileira para float."""
     if isinstance(value_str, (int, float)):
         return float(value_str)
+    if not value_str:
+        return 0.0
     try:
-        cleaned = str(value_str).strip()
-        cleaned = cleaned.replace("R$", "").replace(" ", "")
+        # Remove R$, espaços normais e espaços inquebráveis
+        cleaned = str(value_str).replace("R$", "").replace("\xa0", "").strip()
+        cleaned = "".join(cleaned.split()) # Remove qualquer outro whitespace
+        
+        if not cleaned:
+            return 0.0
+            
         # Formato brasileiro: 1.234,56 -> 1234.56
         if "," in cleaned and "." in cleaned:
             cleaned = cleaned.replace(".", "").replace(",", ".")

@@ -4,9 +4,7 @@
 
 import streamlit as st
 from auth import render_auth_sidebar
-from services.auth_service import (
-    is_authenticated, init_cookie_manager, restore_session_from_cookie,
-)
+from services.auth_service import is_authenticated
 from services.google_sheets_service import initialize_sheets
 from utils.constants import COLORS
 
@@ -21,12 +19,6 @@ st.set_page_config(
                  "Desenvolvido para Farmácia Bem Estar."
     },
 )
-
-# Inicializar cookie manager (deve ser antes de qualquer outro componente)
-init_cookie_manager()
-
-# Tentar restaurar sessão do cookie antes de renderizar o sidebar
-restore_session_from_cookie()
 
 # Carregar CSS customizado
 try:
@@ -43,75 +35,51 @@ def _home_page():
     st.html(f"""
     <div style="
         text-align: center;
-        padding: 3rem 2rem;
-        max-width: 700px;
+        padding: 2rem 1rem;
+        max-width: 800px;
         margin: 0 auto;
     ">
-        <div style="font-size: 4rem; margin-bottom: 1rem;">🌿</div>
+        <div style="font-size: 6rem; margin-bottom: 0.5rem;">🌿</div>
         <h1 style="
             color: {COLORS['primaria']};
-            font-size: 2.4rem;
+            font-size: 2.6rem;
             font-weight: 800;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.2rem;
         ">Bem Estar Financeiro</h1>
         <p style="
             color: {COLORS['texto_secundario']};
             font-size: 1.1rem;
-            margin-bottom: 2.5rem;
+            margin-bottom: 3rem;
         ">Controle inteligente de vencimentos e previsões</p>
+    </div>
+    """)
 
-        <div style="
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 2rem;
-        ">
-            <div style="
-                background: white;
-                border: 1px solid {COLORS['borda']};
-                border-radius: 12px;
-                padding: 1.5rem 1rem;
-                text-align: center;
-            ">
-                <div style="font-size: 2rem;">📊</div>
-                <div style="font-weight: 600; color: {COLORS['texto']}; margin-top: 0.5rem;">Dashboard</div>
-                <div style="font-size: 0.8rem; color: {COLORS['texto_secundario']};">
-                    KPIs e visão geral
-                </div>
-            </div>
-            <div style="
-                background: white;
-                border: 1px solid {COLORS['borda']};
-                border-radius: 12px;
-                padding: 1.5rem 1rem;
-                text-align: center;
-            ">
-                <div style="font-size: 2rem;">📝</div>
-                <div style="font-weight: 600; color: {COLORS['texto']}; margin-top: 0.5rem;">Cadastro</div>
-                <div style="font-size: 0.8rem; color: {COLORS['texto_secundario']};">
-                    Gerencie boletos
-                </div>
-            </div>
-            <div style="
-                background: white;
-                border: 1px solid {COLORS['borda']};
-                border-radius: 12px;
-                padding: 1.5rem 1rem;
-                text-align: center;
-            ">
-                <div style="font-size: 2rem;">📅</div>
-                <div style="font-weight: 600; color: {COLORS['texto']}; margin-top: 0.5rem;">Calendário</div>
-                <div style="font-size: 0.8rem; color: {COLORS['texto_secundario']};">
-                    Visão mensal
-                </div>
-            </div>
-        </div>
+    st.html("<div style='height: 2rem;'></div>")
 
-        <p style="
-            color: {COLORS['texto_secundario']};
-            font-size: 0.9rem;
-        ">
-            Use o menu lateral para navegar entre as páginas.
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown('<div class="home-card-container">', unsafe_allow_html=True)
+        if st.button("📊\n\nDashboard\n\nKPIs e visão geral", key="btn_dash", use_container_width=True):
+            st.switch_page("pages/1_Dashboard.py")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col2:
+        st.markdown('<div class="home-card-container">', unsafe_allow_html=True)
+        if st.button("📝\n\nCadastro\n\nGerencie boletos", key="btn_cad", use_container_width=True):
+            st.switch_page("pages/2_Cadastro_de_Boletos.py")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col3:
+        st.markdown('<div class="home-card-container">', unsafe_allow_html=True)
+        if st.button("📅\n\nCalendário\n\nVisão mensal", key="btn_cal", use_container_width=True):
+            st.switch_page("pages/4_Calendario.py")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.html("""
+    <div style="text-align: center; margin-top: 4rem;">
+        <p style="color: #6B7280; font-size: 1rem; font-weight: 500;">
+            Clique nos painéis acima para gerenciar suas finanças.
         </p>
     </div>
     """)

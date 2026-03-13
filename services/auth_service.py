@@ -8,81 +8,12 @@ import time
 import hashlib
 import hmac
 import base64
-import extra_streamlit_components as stx
+import streamlit as st
+import json
+import time
 
-_COOKIE_NAME = "be_session_v1"
-_COOKIE_MAX_AGE = 7 * 24 * 3600  # 7 dias
-_cookie_mgr = None
-
-
-def init_cookie_manager():
-    """Inicializa o CookieManager. Deve ser chamado uma vez no topo do app.py."""
-    global _cookie_mgr
-    _cookie_mgr = stx.CookieManager(key="be_auth_mgr")
-    return _cookie_mgr
-
-
-def _cookie_manager():
-    return _cookie_mgr
-
-
-def _sign_token(data: dict) -> str:
-    secret = st.secrets["auth"]["cookie_secret"]
-    payload = base64.b64encode(
-        json.dumps({**data, "exp": time.time() + _COOKIE_MAX_AGE}).encode()
-    ).decode()
-    sig = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
-    return f"{payload}.{sig}"
-
-
-def _verify_token(token: str) -> dict | None:
-    try:
-        secret = st.secrets["auth"]["cookie_secret"]
-        payload, sig = token.rsplit(".", 1)
-        expected = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
-        if not hmac.compare_digest(sig, expected):
-            return None
-        data = json.loads(base64.b64decode(payload).decode())
-        if data.get("exp", 0) > time.time():
-            return {k: v for k, v in data.items() if k != "exp"}
-    except Exception:
-        pass
-    return None
-
-
-def save_session_cookie(user_info: dict):
-    """Salva sessão autenticada em cookie assinado (7 dias)."""
-    cm = _cookie_manager()
-    if cm is not None:
-        cm.set(_COOKIE_NAME, _sign_token(user_info), max_age=_COOKIE_MAX_AGE)
-
-
-def restore_session_from_cookie() -> bool:
-    """Tenta restaurar sessão a partir do cookie. Retorna True se restaurou."""
-    if is_authenticated():
-        return True
-    cm = _cookie_manager()
-    if cm is None:
-        return False
-    try:
-        token = cm.get(_COOKIE_NAME)
-        if not token:
-            return False
-        user_info = _verify_token(token)
-        if user_info:
-            login_user(user_info)
-            return True
-    except Exception:
-        pass
-    return False
-
-
-def clear_session_cookie():
-    """Remove o cookie de sessão."""
-    cm = _cookie_manager()
-    if cm is not None:
-        cm.delete(_COOKIE_NAME)
-
+# O gerenciamento de sessão agora é feito 100% via st.session_state
+# para evitar problemas de sincronização com cookies em ambiente local/cloud.
 
 def get_auth_config():
     """Carrega configuração de autenticação dos secrets."""

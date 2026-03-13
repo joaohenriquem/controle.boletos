@@ -5,7 +5,6 @@ import streamlit as st
 from services.auth_service import (
     is_authenticated, get_current_user, get_google_auth_url,
     handle_callback, is_email_allowed, login_user, logout_user,
-    save_session_cookie, clear_session_cookie,
 )
 from utils.constants import COLORS
 
@@ -61,7 +60,6 @@ def render_auth_sidebar():
                 """)
 
                 if st.button("🚪 Sair", width="stretch"):
-                    clear_session_cookie()
                     logout_user()
                     st.rerun()
         else:
@@ -84,7 +82,6 @@ def render_auth_sidebar():
 
                     if is_email_allowed(user_info["email"]):
                         login_user(user_info)
-                        save_session_cookie(user_info)
                         # Limpa os parâmetros ANTES de qualquer rerun
                         st.query_params.clear()
                         st.rerun()

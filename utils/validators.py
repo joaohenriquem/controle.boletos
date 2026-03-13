@@ -23,9 +23,10 @@ def validate_boleto_form(data: dict) -> list:
 
     # Validar valor
     try:
-        valor = parse_currency(data.get("valor", 0))
+        v_raw = data.get("valor", 0)
+        valor = parse_currency(v_raw)
         if valor <= 0:
-            errors.append("Valor deve ser maior que zero.")
+            errors.append(f"Valor deve ser maior que zero. (Recebido: {v_raw})")
     except (ValueError, TypeError):
         errors.append("Valor inválido.")
 
