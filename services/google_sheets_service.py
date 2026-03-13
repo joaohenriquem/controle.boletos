@@ -1,4 +1,4 @@
-# services/google_sheets_service.py
+# services/google_sheets_service.py [v1.0.1]
 # Camada de persistência com Google Sheets via gspread + service account
 
 import streamlit as st

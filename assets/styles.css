@@ -117,7 +117,7 @@
     padding: 1rem;
 }
 
-.home-card-container .stButton > button {
+.home-card-container .stButton>button {
     height: 480px !important;
     max-width: 600px !important;
     margin: 0 auto !important;
@@ -126,7 +126,7 @@
     border-radius: 48px !important;
     padding: 4rem !important;
     transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.08) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08) !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -140,14 +140,14 @@
     line-height: 1.1 !important;
 }
 
-.home-card-container .stButton > button:hover {
+.home-card-container .stButton>button:hover {
     transform: translateY(-25px) !important;
     box-shadow: 0 50px 100px rgba(46, 139, 87, 0.3) !important;
     border-color: var(--cor-primaria) !important;
     background: #f8fffb !important;
 }
 
-.home-card-container .stButton > button p {
+.home-card-container .stButton>button p {
     font-size: 1.2rem !important;
     font-weight: 500 !important;
     color: var(--cor-texto-sec) !important;
@@ -166,13 +166,13 @@
     font-size: 1.3rem !important;
     white-space: pre-line !important;
     transition: all 0.3s ease !important;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.05) !important;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05) !important;
     border: 3px solid var(--cor-borda) !important;
 }
 
 .cal-base-button-style [data-testid="stElementContainer"] button:hover {
     transform: translateY(-8px) scale(1.02) !important;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.12) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12) !important;
     z-index: 10 !important;
 }
 
@@ -188,59 +188,66 @@
 }
 
 /* Sibling Selectors for Status Painting - Ultra specific */
-div[data-testid="stElementContainer"]:has(.marker-ok) + div[data-testid="stElementContainer"] button {
+div[data-testid="stElementContainer"]:has(.marker-ok)+div[data-testid="stElementContainer"] button {
     background-color: #D1FAE5 !important;
     border-color: var(--cor-primaria) !important;
     color: #064E3B !important;
 }
 
-div[data-testid="stElementContainer"]:has(.marker-warning) + div[data-testid="stElementContainer"] button {
+div[data-testid="stElementContainer"]:has(.marker-warning)+div[data-testid="stElementContainer"] button {
     background-color: #FEF3C7 !important;
     border-color: var(--cor-alerta) !important;
     color: #78350F !important;
 }
 
-div[data-testid="stElementContainer"]:has(.marker-danger) + div[data-testid="stElementContainer"] button {
+div[data-testid="stElementContainer"]:has(.marker-danger)+div[data-testid="stElementContainer"] button {
     background-color: #FEE2E2 !important;
     border-color: var(--cor-erro) !important;
     color: #7F1D1D !important;
 }
 
-div[data-testid="stElementContainer"]:has(.marker-empty) + div[data-testid="stElementContainer"] button {
+div[data-testid="stElementContainer"]:has(.marker-empty)+div[data-testid="stElementContainer"] button {
     background-color: #FFFFFF !important;
     border-color: var(--cor-borda) !important;
     color: var(--cor-texto) !important;
 }
 
 /* Today highlight for standard buttons */
-div[data-testid="stElementContainer"]:has(.marker-today) + div[data-testid="stElementContainer"] button {
-    box-shadow: 0 0 0 5px var(--cor-primaria), 0 15px 40px rgba(46, 139, 87, 0.4) !important;
+div[data-testid="stElementContainer"]:has(.marker-today)+div[data-testid="stElementContainer"] button {
+    box-shadow: 0 0 0 2px var(--cor-primaria), 0 15px 40px rgba(0, 0, 0, 0.3) !important;
     z-index: 20 !important;
 }
 
-.home-card-container .stButton > button div[data-testid="stMarkdownContainer"] p {
+.home-card-container .stButton>button div[data-testid="stMarkdownContainer"] p {
     margin: 0 !important;
     line-height: 1.4 !important;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* --- Botões --- */
-.stButton > button {
+.stButton>button {
     border-radius: 10px;
     font-weight: 600;
     transition: all 0.2s ease;
 }
 
-.stButton > button[kind="primary"] {
+.stButton>button[kind="primary"] {
     background-color: var(--cor-primaria);
     border-color: var(--cor-primaria);
 }
 
-.stButton > button[kind="primary"]:hover {
+.stButton>button[kind="primary"]:hover {
     background-color: var(--cor-primaria-hover);
     border-color: var(--cor-primaria-hover);
 }
@@ -280,10 +287,10 @@ div[data-testid="stElementContainer"]:has(.marker-today) + div[data-testid="stEl
 }
 
 /* --- Inputs --- */
-.stTextInput > div > div,
-.stSelectbox > div > div,
-.stDateInput > div > div,
-.stNumberInput > div > div {
+.stTextInput>div>div,
+.stSelectbox>div>div,
+.stDateInput>div>div,
+.stNumberInput>div>div {
     border-radius: 10px;
 }
 
@@ -356,14 +363,14 @@ div[data-testid="stElementContainer"]:has(.marker-today) + div[data-testid="stEl
 }
 
 /* --- Download buttons --- */
-.stDownloadButton > button {
+.stDownloadButton>button {
     border-radius: 10px;
     font-weight: 600;
     border: 2px solid var(--cor-primaria);
     color: var(--cor-primaria);
 }
 
-.stDownloadButton > button:hover {
+.stDownloadButton>button:hover {
     background-color: var(--cor-primaria);
     color: white;
 }

@@ -4,14 +4,13 @@
 import streamlit as st
 import uuid
 from services.auth_service import require_auth
+from utils.formatters import format_currency, parse_currency
 from services.google_sheets_service import (
-    get_parametros, update_parametro,
+    get_parametros, update_parametro, update_parametros_batch,
     get_fornecedores, get_categorias,
     insert_record, update_record, delete_record,
     get_fornecedores_ativos, get_categorias_ativas,
 )
-from utils.constants import SHEET_FORNECEDORES, SHEET_CATEGORIAS, COLORS
-from utils.formatters import format_currency
 
 st.set_page_config(page_title="Parâmetros — Bem Estar Financeiro", page_icon="⚙️", layout="wide")
 
@@ -39,7 +38,6 @@ with tab_geral:
     params = get_parametros()
 
     with st.form("form_parametros"):
-        from utils.formatters import parse_currency
         
         raw_limite = params.get("limite_maximo_diario", "1000")
         limite_val = parse_currency(raw_limite)
@@ -100,7 +98,6 @@ with tab_geral:
 
         if st.form_submit_button("💾 Salvar Parâmetros", type="primary", width="stretch"):
             with st.spinner("Salvando..."):
-                from services.google_sheets_service import update_parametros_batch
                 
                 novos_params = {
                     "limite_maximo_diario": str(limite),
