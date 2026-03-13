@@ -27,12 +27,13 @@ def _get_credentials():
 def prepare_boletos_df(df: pd.DataFrame) -> pd.DataFrame:
     """Prepara DataFrame de boletos com tipos corretos."""
     if df is None or df.empty:
-        return pd.DataFrame(columns=["data_vencimento", "data_emissao", "valor", "status"])
+        return pd.DataFrame(columns=["id", "data_vencimento", "data_emissao", "valor", "status", "categoria", "fornecedor"])
 
     # Normalizar nomes de colunas para evitar KeyError em caso de cabeçalhos alterados
     normalized = { normalize_column_name(c): c for c in df.columns }
     column_mappings = {}
-    for expected in ("data_vencimento", "data_emissao", "valor", "status"):
+    expected_cols = ("id", "data_vencimento", "data_emissao", "valor", "status", "categoria", "fornecedor")
+    for expected in expected_cols:
         if expected not in df.columns and expected in normalized:
             column_mappings[normalized[expected]] = expected
     if column_mappings:
@@ -41,9 +42,9 @@ def prepare_boletos_df(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     
     # Garantir que colunas existem antes de aplicar transformações
-    for col in ["data_vencimento", "data_emissao", "valor", "status"]:
+    for col in expected_cols:
         if col not in df.columns:
-            df[col] = None
+            df[col] = "" if col != "valor" else 0.0
 
     df["data_vencimento"] = df["data_vencimento"].apply(parse_date_safe)
     df["data_emissao"] = df["data_emissao"].apply(parse_date_safe)
