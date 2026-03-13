@@ -1,0 +1,13 @@
+streamlit>=1.42.0
+extra-streamlit-components
+Authlib>=1.3.2
+pandas
+plotly
+gspread
+google-auth
+streamlit-calendar
+python-dateutil
+openpyxl
+pdfplumber
+pypdf
+Pillow
