@@ -122,19 +122,48 @@ def get_google_auth_url():
 
 def handle_callback(code: str):
     """Processa o callback do OAuth e obtém informações do usuário."""
+    import requests
     config = get_auth_config()
-    session = OAuth2Session(
-        client_id=config["client_id"],
-        client_secret=config["client_secret"],
-        redirect_uri=config["redirect_uri"],
-    )
-    token_endpoint = "https://oauth2.googleapis.com/token"
-    token = session.fetch_token(token_endpoint, code=code)
+    
+    # Previne processar o mesmo código se o login já foi concluído com sucesso
+    if is_authenticated() and st.session_state.get("last_processed_code") == code:
+        return st.session_state["user_info"]
 
-    # Obter informações do usuário
-    userinfo_endpoint = "https://openidconnect.googleapis.com/v1/userinfo"
-    resp = session.get(userinfo_endpoint)
-    userinfo = resp.json()
+    # 1. Trocar código pelo token via POST direto
+    token_url = "https://oauth2.googleapis.com/token"
+    data = {
+        "code": code,
+        "client_id": config["client_id"],
+        "client_secret": config["client_secret"],
+        "redirect_uri": config["redirect_uri"],
+        "grant_type": "authorization_code",
+    }
+    
+    response = requests.post(token_url, data=data)
+    if not response.ok:
+        error_msg = f"HTTP {response.status_code}: {response.text}"
+        # Se o erro for invalid_grant, pode ser que o código já foi trocado e já estamos logados
+        if "invalid_grant" in response.text and is_authenticated():
+            return st.session_state["user_info"]
+            
+        st.error(f"Erro na troca do token: {error_msg}")
+        raise Exception(f"Google Token Error: {error_msg}")
+    
+    # Só marca como processado se o Google aceitou a troca
+    st.session_state["last_processed_code"] = code
+    
+    tokens = response.json()
+    access_token = tokens.get("access_token")
+
+    # 2. Obter informações do usuário
+    userinfo_url = "https://openidconnect.googleapis.com/v1/userinfo"
+    headers = {"Authorization": f"Bearer {access_token}"}
+    user_resp = requests.get(userinfo_url, headers=headers)
+    
+    if not user_resp.ok:
+        raise Exception(f"Userinfo Error: {user_resp.text}")
+        
+    userinfo = user_resp.json()
 
     return {
         "email": userinfo.get("email", ""),

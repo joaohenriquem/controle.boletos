@@ -77,7 +77,7 @@ def render_auth_sidebar():
             query_params = st.query_params
             code = query_params.get("code")
 
-            if code:
+            if code and not is_authenticated():
                 try:
                     with st.spinner("Autenticando..."):
                         user_info = handle_callback(code)
@@ -85,6 +85,7 @@ def render_auth_sidebar():
                     if is_email_allowed(user_info["email"]):
                         login_user(user_info)
                         save_session_cookie(user_info)
+                        # Limpa os parâmetros ANTES de qualquer rerun
                         st.query_params.clear()
                         st.rerun()
                     else:
@@ -94,8 +95,13 @@ def render_auth_sidebar():
                         )
                         st.query_params.clear()
                 except Exception as e:
-                    st.error(f"Erro na autenticação: {e}")
-                    st.query_params.clear()
+                    # Se falhar mas já estiver autenticado, apenas limpa
+                    if is_authenticated():
+                        st.query_params.clear()
+                        st.rerun()
+                    else:
+                        st.error(f"Erro na autenticação: {e}")
+                        st.query_params.clear()
             else:
                 try:
                     auth_url = get_google_auth_url()
