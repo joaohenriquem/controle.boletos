@@ -41,7 +41,7 @@ with st.spinner("Carregando dados..."):
     df_raw = get_boletos()
     params = get_parametros()
     df = prepare_boletos_df(df_raw)
-    limite = float(params.get("limite_maximo_diario", 15000))
+    limite = float(params.get("limite_maximo_diario", 1000))
 
 # KPIs
 kpis = get_kpis(df, limite)

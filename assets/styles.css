@@ -112,67 +112,110 @@
     animation: fadeIn 0.3s ease;
 }
 
-/* --- Mega Home Page Cards --- */
+/* --- Mega Home Page Cards (Unified Button Version) --- */
 .home-card-container {
     padding: 1rem;
 }
 
 .home-card-container .stButton > button {
-    height: 420px !important;
-    max-width: 550px !important;
+    height: 480px !important;
+    max-width: 600px !important;
     margin: 0 auto !important;
     background: white !important;
-    border: 2px solid var(--cor-borda) !important;
-    border-radius: 40px !important;
-    padding: 3.5rem !important;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.06) !important;
+    border: 3px solid var(--cor-borda) !important;
+    border-radius: 48px !important;
+    padding: 4rem !important;
+    transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.08) !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 2rem !important;
+    gap: 2.5rem !important;
     color: var(--cor-texto) !important;
     text-transform: none !important;
-    font-size: 2.2rem !important;
-    font-weight: 800 !important;
+    font-size: 2.8rem !important;
+    font-weight: 900 !important;
     white-space: pre-line !important;
-    line-height: 1.2 !important;
+    line-height: 1.1 !important;
 }
 
 .home-card-container .stButton > button:hover {
-    transform: translateY(-20px) !important;
-    box-shadow: 0 40px 80px rgba(46, 139, 87, 0.28) !important;
+    transform: translateY(-25px) !important;
+    box-shadow: 0 50px 100px rgba(46, 139, 87, 0.3) !important;
     border-color: var(--cor-primaria) !important;
     background: #f8fffb !important;
 }
 
-/* --- Stable Calendar CSS (No JS required) --- */
-.cal-btn-wrapper .stButton > button {
+.home-card-container .stButton > button p {
+    font-size: 1.2rem !important;
+    font-weight: 500 !important;
+    color: var(--cor-texto-sec) !important;
+    margin-top: -1.5rem !important;
+}
+
+/* --- Definitive Calendar Painting (PURE CSS) --- */
+/* We target the button element that follows our hidden marker div */
+
+.cal-base-button-style [data-testid="stElementContainer"] button {
     height: 160px !important;
     min-height: 160px !important;
-    border-radius: 20px !important;
-    border: 3px solid var(--cor-borda) !important;
+    border-radius: 24px !important;
     padding: 1rem !important;
-    transition: all 0.25s ease !important;
-    width: 100% !important;
-    white-space: pre-line !important;
     font-weight: 800 !important;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.04) !important;
+    font-size: 1.3rem !important;
+    white-space: pre-line !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.05) !important;
+    border: 3px solid var(--cor-borda) !important;
 }
 
-.cal-btn-wrapper .stButton > button:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+.cal-base-button-style [data-testid="stElementContainer"] button:hover {
+    transform: translateY(-8px) scale(1.02) !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.12) !important;
+    z-index: 10 !important;
 }
 
-.cal-btn-ok .stButton > button { background: #D1FAE5 !important; border-color: var(--cor-primaria) !important; color: #064E3B !important; }
-.cal-btn-warning .stButton > button { background: #FEF3C7 !important; border-color: var(--cor-alerta) !important; color: #78350F !important; }
-.cal-btn-danger .stButton > button { background: #FEE2E2 !important; border-color: var(--cor-erro) !important; color: #7F1D1D !important; }
-.cal-btn-empty .stButton > button { background: white !important; border-color: var(--cor-borda) !important; color: var(--cor-texto) !important; }
+/* Marker helper */
+.calendar-marker {
+    display: block !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
 
-.cal-btn-today .stButton > button {
-    box-shadow: 0 0 0 4px var(--cor-primaria), 0 10px 25px rgba(46, 139, 87, 0.3) !important;
+/* Sibling Selectors for Status Painting - Ultra specific */
+div[data-testid="stElementContainer"]:has(.marker-ok) + div[data-testid="stElementContainer"] button {
+    background-color: #D1FAE5 !important;
+    border-color: var(--cor-primaria) !important;
+    color: #064E3B !important;
+}
+
+div[data-testid="stElementContainer"]:has(.marker-warning) + div[data-testid="stElementContainer"] button {
+    background-color: #FEF3C7 !important;
+    border-color: var(--cor-alerta) !important;
+    color: #78350F !important;
+}
+
+div[data-testid="stElementContainer"]:has(.marker-danger) + div[data-testid="stElementContainer"] button {
+    background-color: #FEE2E2 !important;
+    border-color: var(--cor-erro) !important;
+    color: #7F1D1D !important;
+}
+
+div[data-testid="stElementContainer"]:has(.marker-empty) + div[data-testid="stElementContainer"] button {
+    background-color: #FFFFFF !important;
+    border-color: var(--cor-borda) !important;
+    color: var(--cor-texto) !important;
+}
+
+/* Today highlight for standard buttons */
+div[data-testid="stElementContainer"]:has(.marker-today) + div[data-testid="stElementContainer"] button {
+    box-shadow: 0 0 0 5px var(--cor-primaria), 0 15px 40px rgba(46, 139, 87, 0.4) !important;
+    z-index: 20 !important;
 }
 
 .home-card-container .stButton > button div[data-testid="stMarkdownContainer"] p {

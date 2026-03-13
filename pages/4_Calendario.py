@@ -8,9 +8,9 @@ from dateutil.relativedelta import relativedelta
 from services.auth_service import require_auth
 from services.google_sheets_service import get_boletos, get_parametros
 from services.dashboard_service import prepare_boletos_df, get_daily_totals, get_boletos_by_date
-from utils.formatters import format_currency, format_date_br
+from utils.formatters import format_currency, format_date_br, parse_currency
 from utils.dates import today, month_name_br
-from utils.constants import COLORS
+from utils.constants import COLORS, DEFAULT_PARAMS
 from components.tables import render_boletos_table
 
 st.set_page_config(page_title="Calendário — Bem Estar Financeiro", page_icon="📅", layout="wide")
@@ -35,7 +35,14 @@ with st.spinner("Carregando dados..."):
     df_raw = get_boletos()
     params = get_parametros()
     df = prepare_boletos_df(df_raw)
-    limite = float(params.get("limite_maximo_diario", 15000))
+    
+    # Busca o limite nos parâmetros, usando parse_currency para lidar com formatos BR
+    raw_limite = params.get("limite_maximo_diario") or DEFAULT_PARAMS["limite_maximo_diario"]
+    limite = parse_currency(raw_limite)
+    
+    # Se por algum motivo o parse falhar e retornar 0
+    if limite <= 0:
+        limite = 1500.0
 
 # Navegação de mês
 t = today()
@@ -86,7 +93,9 @@ def _show_boletos_dialog(day: int):
         st.markdown("---")
         render_boletos_table(boletos_dia)
 
-# Renderizar calendário visual
+# Renderizar calendário visual com wrapper de estilo base
+st.markdown('<div class="cal-base-button-style">', unsafe_allow_html=True)
+
 cal = calendar.monthcalendar(year, month)
 weekdays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
@@ -106,46 +115,47 @@ for week in cal:
             total = daily_totals.get(day, 0)
             is_today = (day == t.day and month == t.month and year == t.year)
             
-            # Determinar classe de cor
+            # Determinar classe de marcador
             if total > limite:
-                cls = "cal-btn-danger"
+                marker_cls = "marker-danger"
             elif total > limite * 0.7:
-                cls = "cal-btn-warning"
+                marker_cls = "marker-warning"
             elif total > 0:
-                cls = "cal-btn-ok"
+                marker_cls = "marker-ok"
             else:
-                cls = "cal-btn-empty"
+                marker_cls = "marker-empty"
             
-            today_cls = "cal-btn-today" if is_today else ""
+            today_cls = "marker-today" if is_today else ""
             
             # Formatar label do botão
             amount_str = f"R$ {total:,.0f}".replace(",", ".") if total > 0 else "—"
-            # Label com o dia GRANDE e o valor em baixo
             label = f"{day}{' ●' if is_today else ''}\n\n{amount_str}"
             
             with col:
-                st.markdown(f'<div class="cal-btn-wrapper {cls} {today_cls}">', unsafe_allow_html=True)
+                # Injetamos o marcador que o CSS usará para pintar o botão seguinte
+                st.html(f'<div class="calendar-marker {marker_cls} {today_cls}"></div>')
                 if st.button(label, key=f"cal_{year}_{month}_{day}", use_container_width=True):
                     clicked_day = day
-                st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True) # Fim cal-base-button-style
 
 if clicked_day:
     _show_boletos_dialog(clicked_day)
 
 # Legenda
 st.html(f"""
-<div style="display:flex; gap:1.5rem; justify-content:center; margin:2.5rem 0; flex-wrap:wrap;">
-    <span style="display:flex; align-items:center; gap:0.5rem; font-weight:700; font-size:1.1rem;">
-        <span style="width:20px; height:20px; background:#D1FAE5; border:3px solid {COLORS['primaria']}; border-radius:6px;"></span>
+<div style="display:flex; gap:2rem; justify-content:center; margin:3rem 0; flex-wrap:wrap;">
+    <span style="display:flex; align-items:center; gap:0.6rem; font-weight:800; font-size:1.2rem; color:#064E3B;">
+        <span style="width:24px; height:24px; background:#D1FAE5; border:3px solid {COLORS['primaria']}; border-radius:8px;"></span>
         Dentro do limite
     </span>
-    <span style="display:flex; align-items:center; gap:0.5rem; font-weight:700; font-size:1.1rem;">
-        <span style="width:20px; height:20px; background:#FEF3C7; border:3px solid {COLORS['alerta']}; border-radius:6px;"></span>
+    <span style="display:flex; align-items:center; gap:0.6rem; font-weight:800; font-size:1.2rem; color:#78350F;">
+        <span style="width:24px; height:24px; background:#FEF3C7; border:3px solid {COLORS['alerta']}; border-radius:8px;"></span>
         Atenção (70-100%)
     </span>
-    <span style="display:flex; align-items:center; gap:0.5rem; font-weight:700; font-size:1.1rem;">
-        <span style="width:20px; height:20px; background:#FEE2E2; border:3px solid {COLORS['erro']}; border-radius:6px;"></span>
-        Acima do limite
+    <span style="display:flex; align-items:center; gap:0.6rem; font-weight:800; font-size:1.2rem; color:#7F1D1D;">
+        <span style="width:24px; height:24px; background:#FEE2E2; border:3px solid {COLORS['erro']}; border-radius:8px;"></span>
+        Crítico (> Limite)
     </span>
 </div>
 """)

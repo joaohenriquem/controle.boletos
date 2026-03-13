@@ -5,7 +5,7 @@ import pandas as pd
 import unicodedata
 from datetime import date, timedelta
 from utils.dates import today, date_range_this_month, next_n_days, parse_date_safe
-from utils.formatters import parse_currency
+from utils.formatters import parse_currency, normalize_column_name
 from utils.constants import STATUS_PAGO, STATUS_CANCELADO
 import streamlit as st
 import json
@@ -21,17 +21,7 @@ def _get_credentials():
         return None
 
 
-def _normalize_column_name(name: str) -> str:
-    """Normaliza nome de coluna para permitir variações de cabeçalho."""
-    if not isinstance(name, str):
-        return ""
-    # Remove acentos, espaços extras e caracteres especiais
-    value = unicodedata.normalize("NFKD", name)
-    value = "".join([c for c in value if not unicodedata.combining(c)])
-    value = value.strip().lower()
-    value = value.replace(" ", "_")
-    value = value.replace("-", "_")
-    return value
+    # Remove a definição local para usar a importada
 
 
 def prepare_boletos_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -40,7 +30,7 @@ def prepare_boletos_df(df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(columns=["data_vencimento", "data_emissao", "valor", "status"])
 
     # Normalizar nomes de colunas para evitar KeyError em caso de cabeçalhos alterados
-    normalized = { _normalize_column_name(c): c for c in df.columns }
+    normalized = { normalize_column_name(c): c for c in df.columns }
     column_mappings = {}
     for expected in ("data_vencimento", "data_emissao", "valor", "status"):
         if expected not in df.columns and expected in normalized:

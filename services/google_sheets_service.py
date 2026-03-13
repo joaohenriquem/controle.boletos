@@ -7,6 +7,8 @@ from google.oauth2.service_account import Credentials
 import pandas as pd
 from datetime import datetime
 import json
+from utils.formatters import format_currency, parse_currency, normalize_column_name
+from utils.dates import today
 from utils.constants import (
     BOLETOS_COLUMNS, PARAMETROS_COLUMNS, FORNECEDORES_COLUMNS,
     CATEGORIAS_COLUMNS, SHEET_BOLETOS, SHEET_PARAMETROS,
@@ -150,7 +152,10 @@ def read_sheet(sheet_name: str) -> pd.DataFrame:
 
 def _invalidate_cache(sheet_name: str):
     """Invalida o cache de leitura após uma escrita."""
+    # Somente read_sheet tem o decorador @st.cache_data, então só ela tem .clear()
     read_sheet.clear()
+    # Para garantir 100% de sincronia, podemos limpar todos os dados em cache
+    st.cache_data.clear()
 
 
 # --- Operações de escrita ---
@@ -238,33 +243,84 @@ def get_parametros() -> dict:
     df = read_sheet(SHEET_PARAMETROS)
     if df.empty:
         return DEFAULT_PARAMS.copy()
+    
     try:
-        return dict(zip(df["chave"], df["valor"]))
+        # Normaliza colunas para evitar case-sensitivity
+        mapping = { normalize_column_name(c): c for c in df.columns }
+        chave_col = mapping.get("chave", "chave")
+        valor_col = mapping.get("valor", "valor")
+        
+        res = {}
+        for _, row in df.iterrows():
+            k = str(row[chave_col]).strip().lower()
+            v = str(row[valor_col]).strip()
+            res[k] = v
+        return res
     except Exception:
         return DEFAULT_PARAMS.copy()
 
 
-def update_parametro(chave: str, valor: str):
-    """Atualiza um parâmetro na aba de parâmetros."""
+def update_parametros_batch(params_dict: dict):
+    """Atualiza múltiplos parâmetros de uma vez para otimizar performance e evitar erros de API."""
     try:
         spreadsheet = _get_spreadsheet()
         ws = spreadsheet.worksheet(SHEET_PARAMETROS)
-        records = ws.get_all_values()
-        header = records[0] if records else []
-
-        for row_idx, row in enumerate(records[1:], start=2):
-            if row[0] == chave:
-                ws.update_cell(row_idx, 2, str(valor))
-                _invalidate_cache(SHEET_PARAMETROS)
-                return True
-
-        # Se não existe, insere
-        ws.append_row([chave, str(valor)], value_input_option="USER_ENTERED")
+        all_vals = ws.get_all_values()
+        
+        if not all_vals:
+            # Se vazio, inicializa com cabeçalho e dados
+            rows = [["chave", "valor"]]
+            for k, v in params_dict.items():
+                rows.append([k, str(v)])
+            ws.append_rows(rows, value_input_option="USER_ENTERED")
+            _invalidate_cache(SHEET_PARAMETROS)
+            return True
+            
+        header = all_vals[0]
+        mapping = { normalize_column_name(c): i for i, c in enumerate(header) }
+        idx_chave = mapping.get("chave", 0)
+        idx_valor = mapping.get("valor", 1)
+        
+        updates = []
+        found_keys = set()
+        
+        # Procura chaves existentes
+        for row_idx, row in enumerate(all_vals[1:], start=2):
+            curr_k = str(row[idx_chave]).strip().lower() if len(row) > idx_chave else ""
+            if curr_k in [k.strip().lower() for k in params_dict.keys()]:
+                # Encontra a chave original do dict para pegar o valor
+                actual_k = [k for k in params_dict.keys() if k.strip().lower() == curr_k][0]
+                val = str(params_dict[actual_k])
+                
+                col_letter = chr(64 + idx_valor + 1)
+                updates.append({
+                    'range': f"{col_letter}{row_idx}",
+                    'values': [[val]]
+                })
+                found_keys.add(actual_k)
+        
+        # Executa atualizações em lote via range
+        if updates:
+            ws.batch_update(updates, value_input_option="USER_ENTERED")
+            
+        # Adiciona chaves não encontradas
+        for k, v in params_dict.items():
+            if k not in found_keys:
+                new_row = [""] * max(idx_chave + 1, idx_valor + 1, len(header))
+                new_row[idx_chave] = k
+                new_row[idx_valor] = str(v)
+                ws.append_row(new_row, value_input_option="USER_ENTERED")
+                
         _invalidate_cache(SHEET_PARAMETROS)
         return True
     except Exception as e:
-        st.error(f"Erro ao atualizar parâmetro: {e}")
+        st.error(f"Erro ao salvar parâmetros em lote: {e}")
         return False
+
+
+def update_parametro(chave: str, valor: str):
+    """Atualiza um único parâmetro (wrapper para batch)."""
+    return update_parametros_batch({chave: valor})
 
 
 def get_fornecedores() -> pd.DataFrame:

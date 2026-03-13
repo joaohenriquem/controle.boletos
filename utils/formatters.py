@@ -2,6 +2,7 @@
 # Funções de formatação para valores monetários, datas e textos
 
 import locale
+import unicodedata
 from datetime import datetime, date
 
 
@@ -44,24 +45,48 @@ def parse_date(date_str: str) -> date:
 
 
 def parse_currency(value_str) -> float:
-    """Converte string monetária brasileira para float."""
+    """Converte string monetária brasileira para float de forma ultra-robusta."""
     if isinstance(value_str, (int, float)):
         return float(value_str)
     if not value_str:
         return 0.0
+    
     try:
-        # Remove R$, espaços normais e espaços inquebráveis
+        # Limpeza básica: remove R$, espaços e símbolos não numéricos
         cleaned = str(value_str).replace("R$", "").replace("\xa0", "").strip()
-        cleaned = "".join(cleaned.split()) # Remove qualquer outro whitespace
+        cleaned = "".join(cleaned.split())
         
         if not cleaned:
             return 0.0
             
-        # Formato brasileiro: 1.234,56 -> 1234.56
-        if "," in cleaned and "." in cleaned:
+        # Tenta conversão direta (padrão float Python/US 1234.56)
+        try:
+            # Se for um número simples com apenas um ponto decimal opcional
+            # No Brazil tendemos a usar vírgula, então se houver vírgula, pulamos para a lógica BR
+            if "," not in cleaned:
+                return float(cleaned)
+        except:
+            pass
+            
+        # Lógica de decisão de separador BR:
+        if "." in cleaned and "," in cleaned:
+            # Formato completo: 1.234,56 -> 1234.56
             cleaned = cleaned.replace(".", "").replace(",", ".")
         elif "," in cleaned:
+            # Formato simples: 1234,56 -> 1234.56
             cleaned = cleaned.replace(",", ".")
+        elif "." in cleaned:
+            # Se houver apenas ponto (ex: 1.500 ou 1000.5)
+            # No gspread/pandas, floats costumam vir como 1000.0 (ponto decimal)
+            # No BR, costumam digitar 1.000 (ponto milhar)
+            parts = cleaned.split(".")
+            # Decisão: se a última parte tiver 1 ou 2 dígitos, tratamos como decimal (US/Standard)
+            # Se tiver 3 dígitos, tratamos como milhar (1.000)
+            if len(parts[-1]) in (1, 2):
+                pass # Mantém o ponto
+            else:
+                cleaned = cleaned.replace(".", "")
+
         return float(cleaned)
     except (ValueError, TypeError):
         return 0.0
@@ -83,3 +108,16 @@ def status_emoji(status: str) -> str:
         "cancelado": "⚫",
     }
     return mapping.get(status, "⚪")
+
+
+def normalize_column_name(name: str) -> str:
+    """Normaliza nome de coluna para permitir variações de cabeçalho."""
+    if not isinstance(name, str):
+        return ""
+    # Remove acentos, espaços extras e caracteres especiais
+    value = unicodedata.normalize("NFKD", name)
+    value = "".join([c for c in value if not unicodedata.combining(c)])
+    value = value.strip().lower()
+    value = value.replace(" ", "_")
+    value = value.replace("-", "_")
+    return value

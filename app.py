@@ -60,21 +60,23 @@ def _home_page():
     
     with col1:
         st.markdown('<div class="home-card-container">', unsafe_allow_html=True)
-        if st.button("📊\n\nDashboard\n\nKPIs e visão geral", key="btn_dash", use_container_width=True):
-            st.switch_page("pages/1_Dashboard.py")
+        if st.button("📅\n\n**CALENDÁRIO**\n\nVisão mensal", key="btn_cal", use_container_width=True):
+            st.switch_page("pages/4_Calendario.py")
         st.markdown('</div>', unsafe_allow_html=True)
-
+    
     with col2:
         st.markdown('<div class="home-card-container">', unsafe_allow_html=True)
-        if st.button("📝\n\nCadastro\n\nGerencie boletos", key="btn_cad", use_container_width=True):
-            st.switch_page("pages/2_Cadastro_de_Boletos.py")
+        if st.button("📊\n\n**DASHBOARD**\n\nKPIs e visão geral", key="btn_dash", use_container_width=True):
+            st.switch_page("pages/1_Dashboard.py")
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col3:
         st.markdown('<div class="home-card-container">', unsafe_allow_html=True)
-        if st.button("📅\n\nCalendário\n\nVisão mensal", key="btn_cal", use_container_width=True):
-            st.switch_page("pages/4_Calendario.py")
+        if st.button("📝\n\n**CADASTRO**\n\nGerencie boletos", key="btn_cad", use_container_width=True):
+            st.switch_page("pages/2_Cadastro_de_Boletos.py")
         st.markdown('</div>', unsafe_allow_html=True)
+
+   
 
     st.html("""
     <div style="text-align: center; margin-top: 4rem;">

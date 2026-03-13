@@ -194,7 +194,11 @@ with tab_editar:
             with col2:
                 ed_emissao = st.date_input("Data de Emissão", value=boleto["data_emissao"])
                 ed_vencimento = st.date_input("Data de Vencimento", value=boleto["data_vencimento"])
-                ed_valor = st.text_input("Valor (R$)", value=f"{boleto['valor']:.2f}")
+                
+                # Formata o valor com vírgula para edição (1234,56)
+                val_float = float(boleto['valor'])
+                ed_valor_fmt = f"{val_float:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+                ed_valor = st.text_input("Valor (R$)", value=ed_valor_fmt)
                 ed_status = st.selectbox(
                     "Status",
                     options=STATUS_OPTIONS,

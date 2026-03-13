@@ -39,18 +39,25 @@ with tab_geral:
     params = get_parametros()
 
     with st.form("form_parametros"):
-        limite = st.number_input(
+        from utils.formatters import parse_currency
+        
+        raw_limite = params.get("limite_maximo_diario", "1000")
+        limite_val = parse_currency(raw_limite)
+        
+        # Usamos text_input para permitir que o usuário digite com vírgula (ex: 150,00)
+        limite_str = st.text_input(
             "Limite máximo diário (R$)",
-            min_value=0.0,
-            value=float(params.get("limite_maximo_diario", 15000)),
-            step=500.0,
-            format="%.2f",
+            value=f"{limite_val:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+            help="Exemplo: 150,00 ou 1.500,00",
         )
+        # Parseamos de volta para float para validações e armazenamento padronizado
+        limite = parse_currency(limite_str)
+        
         dias_alerta = st.number_input(
             "Dias de alerta antecipado",
             min_value=1,
             max_value=30,
-            value=int(params.get("dias_alerta", 3)),
+            value=int(str(params.get("dias_alerta", 3)).split('.')[0]),
         )
 
         st.markdown("#### Faixas de Risco")
@@ -60,7 +67,7 @@ with tab_geral:
                 "Faixa verde — até (% do limite)",
                 min_value=10,
                 max_value=100,
-                value=int(params.get("faixa_verde_percentual", 70)),
+                value=int(str(params.get("faixa_verde_percentual", 70)).split('.')[0]),
                 help="Abaixo deste percentual = situação normal (verde)",
             )
         with col2:
@@ -68,7 +75,7 @@ with tab_geral:
                 "Faixa amarela — até (% do limite)",
                 min_value=10,
                 max_value=200,
-                value=int(params.get("faixa_amarela_percentual", 100)),
+                value=int(str(params.get("faixa_amarela_percentual", 100)).split('.')[0]),
                 help="Entre faixa verde e este valor = atenção (amarelo). Acima = vermelho",
             )
 
@@ -92,11 +99,21 @@ with tab_geral:
         """)
 
         if st.form_submit_button("💾 Salvar Parâmetros", type="primary", width="stretch"):
-            update_parametro("limite_maximo_diario", str(limite))
-            update_parametro("dias_alerta", str(dias_alerta))
-            update_parametro("faixa_verde_percentual", str(faixa_verde))
-            update_parametro("faixa_amarela_percentual", str(faixa_amarela))
-            st.success("✅ Parâmetros salvos com sucesso!")
+            with st.spinner("Salvando..."):
+                from services.google_sheets_service import update_parametros_batch
+                
+                novos_params = {
+                    "limite_maximo_diario": str(limite),
+                    "dias_alerta": str(dias_alerta),
+                    "faixa_verde_percentual": str(faixa_verde),
+                    "faixa_amarela_percentual": str(faixa_amarela)
+                }
+                
+                if update_parametros_batch(novos_params):
+                    st.success("✅ Parâmetros salvos com sucesso!")
+                    st.rerun()
+                else:
+                    st.error("❌ Erro ao salvar alguns parâmetros. Verifique a planilha.")
 
 # ---- TAB FORNECEDORES ----
 with tab_forn:
